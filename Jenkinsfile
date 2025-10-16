@@ -26,15 +26,21 @@ pipeline{
         }
         stage("Test"){
             steps{
-                echo "Developer / Tester tests likh ke dega..."
+                echo "Developer tests ..."
             }
             
         }
-        stage("Push to Docker Hub"){
+        stage("docker push"){
             steps{
-                script{
-                    docker_push("dockerHubCreds","two-tier-flask-app")
-                }  
+                withCredentials([usernamePassword(
+                    credentialsId:"dockerHubCreds",
+                    passwordVariable: "dockerHubPass",
+                    usernameVariable: "dockerHubUser"
+                 )]){
+                sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
+                sh "docker tag shoping ${env.dockerHubUser}/shoping"
+                sh "docker push ${env.dockerHubUser}/shoping:latest"
+                }
             }
         }
         stage("Deploy"){
